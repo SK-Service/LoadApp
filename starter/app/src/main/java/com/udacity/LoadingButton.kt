@@ -3,6 +3,8 @@ package com.udacity
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import kotlin.properties.Delegates
@@ -12,8 +14,20 @@ class LoadingButton @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
     private var widthSize = 0
     private var heightSize = 0
+    private var progress: Int = 0
+
+    private var buttonText: String = ""
+    private var displayedText: String = ""
+
+    private var circleColor: Int = 0
+    private var buttonDownloadText : String = ""
+    private var buttonTextColor: Int = Color.GRAY
+    private var buttonBackgroundColor: Int = 0
+    private var buttonDownloadingBackgroundColor: Int = 0
+
 
     private val valueAnimator = ValueAnimator()
+    private var progressArc = RectF()
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
 
