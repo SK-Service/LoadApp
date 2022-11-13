@@ -14,6 +14,14 @@
     <string name="bumptech_download">Bumptech Glide Download</string>
     <string name="udacity_loadapp_starter">Udacity Load App Starter Project Download</string>
     <string name="retrofit_download">HTTP Library Retrofit Download</string>
+    <string name="download_notification_channel_id">108</string>
+    <string name="notification_channel">Download Channel</string>
+    <string name="success">success</string>
+    <string name="fail">fail</string>
+    <string name="file_name">File name:</string>
+    <string name="status">Status:</string>
+    <string name="ok">OK</string>
+
 
 
 </resources>
