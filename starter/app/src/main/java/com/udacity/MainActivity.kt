@@ -40,17 +40,20 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
         custom_button.setOnClickListener {
-            createChannel(getString(R.string.download_notification_channel_id),
-                getString(R.string.notification_channel))
+            Log.i("MainActivity", "Inside Custom Button onClickListener")
             if (radio_group.checkedRadioButtonId == -1){
                 Toast.makeText(
                 applicationContext,
                 "Radio button needs to be selected",Toast.LENGTH_SHORT).show()
-
+                custom_button.animationComplete()
             }
             else {
+                createChannel(getString(R.string.download_notification_channel_id),
+                    getString(R.string.notification_channel))
+
                 when (radio_group.checkedRadioButtonId) {
-                    radio_loadapp.id -> download("https://github.com/bumptech/glide")
+                        radio_loadapp.id -> download("https://github.com/bumptech/glide")
+//                    radio_loadapp.id -> download("http://speedtest.ftp.otenet.gr/files/test1Gb.db")
                     radio_bumptech.id -> download(
                         "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter")
                     radio_retrofit.id -> download("https://github.com/square/retrofit")
@@ -59,15 +62,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     @SuppressLint("Range")
     private fun download(link: String) {
         Log.i("MainActivity", "Inside download:${link}")
         val request =
             DownloadManager.Request(Uri.parse(link))
-                .setVisibleInDownloadsUi(true)
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                .setTitle(getString(R.string.app_name))
+                .setTitle(link)
                 .setDescription(getString(R.string.app_description))
                 .setRequiresCharging(false)
                 .setAllowedOverMetered(true)
@@ -76,30 +76,14 @@ class MainActivity : AppCompatActivity() {
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadRequestNumber =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+        //Set the custom button to downloading after the request is enqued
+        custom_button.downloadStart()
         Log.i("MainActivity", "After Download Queuing request#: ${downloadRequestNumber}")
+        Log.i("MainActivity", "call to print button state")
+        //@TODO - to be deleted - troubleshoot code to find out what is the buttonstate
+        custom_button.printLoadingButtonState()
         //@TODO - to be deleted: Temporary code to check whether download manager is working or not
-        val query = DownloadManager.Query()
-        val downloadManager1 = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-        Log.i("MainActivity", "Getting hold of hte cursor")
-        val cursor: Cursor = downloadManager1.query(query)
-        Log.i("MainActivity", "cursor: ${cursor.moveToFirst()}")
-        if (cursor.moveToFirst()) {
-            Log.i("MainActivity", "if cursor has moved to first: ${cursor.moveToFirst()}")
-            val success = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
-            Log.i("MainActivity", "success:${success}")
-            val isSuccess = success == DownloadManager.STATUS_SUCCESSFUL
-            Log.i("MainActivity", "isSuccess: ${isSuccess}")
-            val downloadTitle = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE))
-            Log.i("MainActivity", "downloadTitle: ${downloadTitle}")
-
-        }
     }
-
-//    companion object {
-//        private const val URL =
-//            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
-//        private const val CHANNEL_ID = "channelId"
-//    }
 
     private val receiver = object : BroadcastReceiver() {
         @SuppressLint("Range")
@@ -117,11 +101,16 @@ class MainActivity : AppCompatActivity() {
                 if (cursor.moveToFirst()) {
                     Log.i("MainActivity", "Inside if check of cursor.moveToFirst")
                     val success = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                    Log.i("MainActivity", "Column_Status:${success}")
                     val isSuccess = success == DownloadManager.STATUS_SUCCESSFUL
-                    val downloadTitle = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE))
+                    val downloadTitle = cursor.getString(cursor.getColumnIndex(
+                        DownloadManager.COLUMN_TITLE))
+                    Log.i("MainActivity", "downloadTitle:${downloadTitle}")
+                    Log.i("MainActivity", "sending notification")
                     sendNotificaiton(isSuccess, downloadTitle)
+                    Log.i("MainActivity", "calling download complete")
+                    custom_button.downloadCompleted()
                 }
-                custom_button.downloadCompleted()
             }
         }
     }
@@ -136,11 +125,9 @@ class MainActivity : AppCompatActivity() {
                 .apply {
                     setShowBadge(false)
                 }
-
+            notificationChannel.lightColor = Color.RED
             notificationChannel.enableLights(true)
             notificationChannel.enableVibration(true)
-            notificationChannel.lightColor = Color.RED
-
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(notificationChannel)
         }
@@ -157,4 +144,10 @@ class MainActivity : AppCompatActivity() {
             downlaodTitle, isSuccess)
     }
 
+    //Receiver unregistered on destroy & clean up animation
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
+        custom_button.cleanAnimationAndEverything()
+    }
 }

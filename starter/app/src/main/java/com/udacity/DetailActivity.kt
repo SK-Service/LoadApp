@@ -2,6 +2,7 @@ package com.udacity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_detail.*
@@ -14,14 +15,18 @@ class DetailActivity : AppCompatActivity() {
         setContentView(R.layout.activity_detail)
         setSupportActionBar(toolbar)
 
-        if (intent.hasExtra("NotificationSuccess"))
+        if (intent.hasExtra("NotificationSuccess")) {
+            Log.i("DetailActiivty", "NotificationSuccess:" +
+                    "${intent.getBooleanExtra("NotificationSuccess", false)}")
             if (intent.getBooleanExtra("NotificationSuccess", false)) {
-                status.text = getString(R.string.success)
                 status.setTextColor(ContextCompat.getColor(this, R.color.colorPrimaryDark))
-            }else {
-                status.text = getString(R.string.fail)
+                status.text = getString(R.string.success)
+            } else {
                 status.setTextColor(ContextCompat.getColor(this, R.color.color_red))
+                status.text = getString(R.string.fail)
             }
+        }
+
         if (intent.hasExtra("NotificationTitle")) {
             file_name.text = intent.getStringExtra("NotificationTitle")
         }
